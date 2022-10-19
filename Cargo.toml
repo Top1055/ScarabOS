@@ -1,0 +1,13 @@
+[package]
+name = "thos"
+version = "0.1.0"
+authors = ["Alexander Michael Feetham <123alexfeetham@gmail.com>"]
+
+# Dsiabling Unwinding to save the hassle of implementing it
+# On panic abort instead of unwind, may cause memory issues if our code fails
+# but if our kernal panics memory is the last thing to worry about
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
