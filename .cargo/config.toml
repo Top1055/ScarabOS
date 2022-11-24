@@ -1,8 +1,0 @@
-# Allowing ability to compile libcore in our non OS format
-
-[unstable]
-build-std-features = ["compiler-builtins-mem"] # Enable mem functions disabled by default due to C collision
-build-std = ["core", "compiler_builtins"] # Compile core
-
-[build]
-target = "x86_64-thos.json"
