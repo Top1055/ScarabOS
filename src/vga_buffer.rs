@@ -1,4 +1,11 @@
-//use volatile:Volatile;
+extern crate volatile;
+extern crate lazy_static;
+extern crate spin;
+
+use self::volatile::Volatile;
+use self::lazy_static::lazy_static;
+use self::spin::Mutex;
+use core::fmt;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -25,7 +32,7 @@ pub enum Color {
 pub const VGA_WIDTH: usize = 80;
 pub const VGA_HEIGHT: usize = 25;
 
-fn make_color(fg: Color, bg: Color) -> u8 {
+pub fn make_color(fg: Color, bg: Color) -> u8 {
     return (fg as u8) | (bg as u8) << 4;
 }
 
@@ -36,24 +43,27 @@ fn make_vga_entry(c: char, color: u8) -> u16 {
 }
 
 pub struct Terminal {
-    pub row: usize,
-    pub column: usize,
-    pub color: u8,
-    pub buffer: &'static mut [u16; ((VGA_WIDTH) * (VGA_HEIGHT))],
+    row: usize,
+    column: usize,
+    color: u8,
+    buffer: &'static mut [Volatile<u16>; ((VGA_WIDTH) * (VGA_HEIGHT))],
 }
 
 impl Terminal {
 
     fn put_entry_at(&mut self, c: char, color: u8, x: usize, y: usize) {
         let index = y * VGA_WIDTH + x;
-        self.buffer[index] = make_vga_entry(c, color);
+        self.buffer[index].write(make_vga_entry(c, color));
+    }
+
+    pub fn set_color(&mut self, fg: Color, bg: Color) {
+        self.color = make_color(fg, bg);
     }
 
     pub fn clear(&mut self) {
         self.row = 0;
         self.column = 0;
-        // Need to move across from pub scope
-        self.color = make_color(Color::LightGrey, Color::Black);
+        self.set_color(Color::LightGrey, Color::Black);
 
         for y in 0..VGA_HEIGHT {
             for x in 0..VGA_WIDTH {
@@ -62,12 +72,12 @@ impl Terminal {
         }
     }
 
-    pub fn scroll(&mut self) {
+    fn scroll(&mut self) {
         for y in 0..VGA_HEIGHT-1 {
             for x in 0..VGA_WIDTH {
                 let prev = (y * VGA_WIDTH) + x;
                 let next = ((y + 1) * VGA_WIDTH) + x;
-                self.buffer[prev] = self.buffer[next];
+                self.buffer[prev].write(self.buffer[next].read());
             }
         }
 
@@ -75,12 +85,11 @@ impl Terminal {
         self.column = 0;
 
         for x in 0..VGA_WIDTH {
-            let index = (self.row * VGA_WIDTH) + x;
             self.put_entry_at(' ', make_color(Color::LightGrey, Color::Black), x, self.row);
         }
 
     }
-    pub fn put_char(&mut self, c: char) {
+    fn put_char(&mut self, c: char) {
         if c == '\n' {
             
             self.row += 1;
@@ -94,11 +103,11 @@ impl Terminal {
 
             self.put_entry_at(c, self.color, self.column, self.row);
             self.column += 1;
-            if(self.column == VGA_WIDTH) {
+            if self.column == VGA_WIDTH {
                 self.column = 0;
                 
                 self.row += 1;
-                if (self.row > VGA_HEIGHT) {
+                if self.row > VGA_HEIGHT {
                     self.scroll();
                 }
             }
@@ -110,4 +119,37 @@ impl Terminal {
             self.put_char(c);
         }
     }
+}
+
+impl fmt::Write for Terminal {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
+        self.print(s);
+        Ok(())
+    }
+}
+
+lazy_static! {
+    pub static ref TERMINAL: Mutex<Terminal> = Mutex::new(Terminal {
+        row: 0,
+        column: 0,
+        color: 0,
+        buffer: unsafe {&mut *(0xb8000 as *mut [Volatile<u16>; VGA_WIDTH * VGA_HEIGHT ])},
+    });
+}
+
+#[macro_export]
+macro_rules! print {
+    ($($arg:tt)*) => ($crate::vga_buffer::_print(format_args!($($arg)*)));
+}
+
+#[macro_export]
+macro_rules! println {
+    () => (print!("\n"));
+    ($($arg:tt)*) => (print!("{}\n", format_args!($($arg)*)));
+}
+
+#[doc(hidden)]
+pub fn _print(args: fmt::Arguments) {
+    use core::fmt::Write;
+    TERMINAL.lock().write_fmt(args).unwrap();
 }
