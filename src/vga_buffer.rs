@@ -46,7 +46,7 @@ pub struct Terminal {
     row: usize,
     column: usize,
     color: u8,
-    buffer: &'static mut [Volatile<u16>; ((VGA_WIDTH) * (VGA_HEIGHT))],
+    buffer: &'static mut [Volatile<u16>; (VGA_WIDTH) * (VGA_HEIGHT)],
 }
 
 impl Terminal {
