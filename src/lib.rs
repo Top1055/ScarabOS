@@ -3,6 +3,8 @@
 
 pub mod boot;
 pub mod vga_buffer;
+pub mod keyboard;
+pub mod cli;
 
 #[no_mangle] // don't mangle the name of this function
 pub extern "C" fn rust_main() -> ! {

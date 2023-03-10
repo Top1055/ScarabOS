@@ -31,3 +31,5 @@ clean:
 	mkdir -p ./out/isodir/boot/grub
 	rm -rf target
 	@RUST_TARGET_PATH=$(shell pwd) xargo clean
+	xargo clean
+	cargo clean
