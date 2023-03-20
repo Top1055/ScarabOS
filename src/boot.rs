@@ -1,4 +1,4 @@
-use crate::{print, println};
+use crate::{print};
 use crate::keyboard;
 
 pub extern fn init() {

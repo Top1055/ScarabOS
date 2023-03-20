@@ -2,7 +2,7 @@ use core::arch::asm;
 use crate::cli;
 
 //command buffer
-pub static KEYBOARD_BUFFER_SIZE: usize = 256;
+pub const KEYBOARD_BUFFER_SIZE: usize = 256;
 
 #[inline(always)]
 unsafe fn inb(port: u16) -> u8 {
@@ -25,19 +25,14 @@ pub fn keyboard_loop() {
     // Wait for input
     loop {
         // Poll the keyboard controller
-        let mut status: u8 = 0;
-        unsafe {
-            status = inb(0x64);
-        };
+        let status: u8 = unsafe { inb(0x64) };
+
         if status & 0x01 == 0 {
             continue;
         }
         
         // Read the input
-        let mut data: u8 = 0;
-        unsafe {
-            data = inb(0x60);
-        };
+        let data: u8 = unsafe { inb(0x60) };
 
         // Handle the input
         if data < 0x80 {
@@ -129,7 +124,7 @@ pub fn keyboard_loop() {
                 _ => '\0',    // Ignore all other keys
             };
 
-            cli::process_char(&ascii_char, &cmd_length, &cmd_buffer);
+            cli::process_char(ascii_char, &mut cmd_length, &mut cmd_buffer);
             
         }
     }
