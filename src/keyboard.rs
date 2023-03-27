@@ -1,5 +1,6 @@
 use core::arch::asm;
 use crate::cli;
+use crate::{print};
 
 //command buffer
 pub const KEYBOARD_BUFFER_SIZE: usize = 256;
@@ -124,7 +125,20 @@ pub fn keyboard_loop() {
                 _ => '\0',    // Ignore all other keys
             };
 
-            cli::process_char(ascii_char, &mut cmd_length, &mut cmd_buffer);
+            print!("{}", ascii_char);
+
+            if ascii_char == '\n' {
+
+                // Process command
+                cli::process_cmd(cmd_length, cmd_buffer);
+                cmd_length = 0;
+
+            } else {
+
+                cmd_buffer[cmd_length] = ascii_char;
+                cmd_length += 1;
+
+            }
             
         }
     }
