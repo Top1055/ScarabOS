@@ -132,7 +132,7 @@ lazy_static! {
     pub static ref TERMINAL: Mutex<Terminal> = Mutex::new(Terminal {
         row: 0,
         column: 0,
-        color: 0,
+        color: make_color(Color::White, Color::Black),
         buffer: unsafe {&mut *(0xb8000 as *mut [Volatile<u16>; VGA_WIDTH * VGA_HEIGHT ])},
     });
 }
