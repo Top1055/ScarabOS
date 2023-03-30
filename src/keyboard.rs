@@ -1,5 +1,6 @@
 use core::arch::asm;
 use crate::cli;
+use crate::vga_buffer;
 use crate::{print};
 
 //command buffer
@@ -122,10 +123,22 @@ pub fn keyboard_loop() {
                 0x56 => '\0', // Keyboard non-US backslash and vertical bar key
                 0x57 => '\0', // F11 key
                 0x58 => '\0', // F12 key
-                _ => '\0',    // Ignore all other keys
-            };
+                0x0E => { // Backspace
 
-            print!("{}", ascii_char);
+                    if cmd_length > 0 {
+
+                        vga_buffer::TERMINAL.lock().back();
+                        cmd_length -= 1;
+
+                    }
+
+                    '\0'
+                }
+                _ => {
+                    print!("data: {}\n", data);
+                    '\0'
+                },    // Ignore all other keys
+            };
 
             if ascii_char == '\n' {
 
@@ -133,8 +146,9 @@ pub fn keyboard_loop() {
                 cli::process_cmd(cmd_length, cmd_buffer);
                 cmd_length = 0;
 
-            } else {
+            } else if ascii_char != '\0' {
 
+                print!("{}", ascii_char);
                 cmd_buffer[cmd_length] = ascii_char;
                 cmd_length += 1;
 
