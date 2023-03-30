@@ -1,4 +1,5 @@
 use crate::{print};
+use crate::vga_buffer;
 use crate::keyboard;
 
 pub fn process_cmd (
@@ -8,6 +9,8 @@ pub fn process_cmd (
     //TODO implement match
     //TODO implement struct
 
+    print!('\n');
+
     //echo
     if cmd_buffer[0..5] == ['e', 'c', 'h', 'o', ' '] {
 
@@ -16,6 +19,10 @@ pub fn process_cmd (
         for letter in 5..cmd_length {
             print!("{}", cmd_buffer[letter]);
         }
+
+    } else if cmd_buffer[0..5] == ['c', 'l', 'e', 'a', 'r'] {
+
+        vga_buffer::TERMINAL.lock().clear();
 
     } else { // no command
 

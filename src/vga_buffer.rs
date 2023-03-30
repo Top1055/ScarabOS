@@ -60,6 +60,23 @@ impl Terminal {
         self.color = make_color(fg, bg);
     }
 
+    pub fn back(&mut self) {
+
+        // if go back 
+        if self.column <= 0 && self.row > 0 {
+
+            self.column = 0;
+            self.row -= 1;
+
+        } else {
+
+            self.column -= 1;
+
+        }
+
+        self.put_entry_at(' ', make_color(Color::LightGrey, Color::Black), self.column, self.row);
+    }
+
     pub fn clear(&mut self) {
         self.row = 0;
         self.column = 0;
@@ -89,6 +106,7 @@ impl Terminal {
         }
 
     }
+
     fn put_char(&mut self, c: char) {
         if c == '\n' {
             
