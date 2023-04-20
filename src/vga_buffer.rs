@@ -64,6 +64,8 @@ impl Terminal {
 
         for _ in 0..len {
 
+            self.write_cursor(false);
+
             // if go back 
             if self.column <= 0 && self.row > 0 {
 
@@ -77,6 +79,7 @@ impl Terminal {
             }
 
             self.put_entry_at(' ', make_color(Color::LightGrey, Color::Black), self.column, self.row);
+            self.write_cursor(true);
 
         }
     }
@@ -91,6 +94,17 @@ impl Terminal {
                 self.put_entry_at(' ', make_color(Color::LightGrey, Color::Black), x, y);
             }
         }
+    }
+
+    pub fn write_cursor(&mut self, visible: bool) {
+
+        // Can change these depends how I feel
+        let c_bg_color = if visible { Color::White } else { Color::Black };
+        let c_fg_color = Color::Black;
+        let c_char = ' ';
+
+        self.put_entry_at(c_char, make_color(c_fg_color, c_bg_color), self.column, self.row);
+
     }
 
     fn scroll(&mut self) {
@@ -114,6 +128,7 @@ impl Terminal {
     fn put_char(&mut self, c: char) {
         if c == '\n' {
             
+            self.write_cursor(false);
             self.row += 1;
             if self.row >= VGA_HEIGHT {
                 self.scroll();
@@ -135,12 +150,16 @@ impl Terminal {
             }
         }
 
+        self.write_cursor(true);
+
     }
+
     pub fn print(&mut self, data: &str) {
         for c in data.chars() {
             self.put_char(c);
         }
     }
+
 }
 
 impl fmt::Write for Terminal {
