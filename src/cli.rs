@@ -9,7 +9,7 @@ pub fn process_cmd (
     //TODO implement match
     //TODO implement struct
 
-    print!('\n');
+    print!("\n");
 
     //echo
     if cmd_buffer[0..5] == ['e', 'c', 'h', 'o', ' '] {

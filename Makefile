@@ -23,6 +23,9 @@
 ./out/boot.o: ./boot/boot.asm
 	nasm -felf64 ./boot/boot.asm -o ./out/boot.o
 
+./out:
+	mkdir out
+
 run:
 	qemu-system-x86_64 -display curses -drive format=raw,file=out/bootable.img
 
