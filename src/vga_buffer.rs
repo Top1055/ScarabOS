@@ -60,21 +60,25 @@ impl Terminal {
         self.color = make_color(fg, bg);
     }
 
-    pub fn back(&mut self) {
+    pub fn back(&mut self, len: usize) {
 
-        // if go back 
-        if self.column <= 0 && self.row > 0 {
+        for _ in 0..len {
 
-            self.column = 0;
-            self.row -= 1;
+            // if go back 
+            if self.column <= 0 && self.row > 0 {
 
-        } else {
+                self.column = 0;
+                self.row -= 1;
 
-            self.column -= 1;
+            } else {
+
+                self.column -= 1;
+
+            }
+
+            self.put_entry_at(' ', make_color(Color::LightGrey, Color::Black), self.column, self.row);
 
         }
-
-        self.put_entry_at(' ', make_color(Color::LightGrey, Color::Black), self.column, self.row);
     }
 
     pub fn clear(&mut self) {
