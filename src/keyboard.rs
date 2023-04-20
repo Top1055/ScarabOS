@@ -32,6 +32,7 @@ pub fn keyboard_loop() {
     // Index for tracking buffer
     let mut cmd_length = 0;
     let mut cmd_length_hist = 0;
+    let mut shift: bool = false;
 
     // Wait for input
     loop {
@@ -44,6 +45,19 @@ pub fn keyboard_loop() {
         
         // Read the input
         let data: u8 = unsafe { inb(0x60) };
+
+        // check if shift is being held
+        match data {
+            0x2A | 0x36 => {
+                shift = true;
+            },
+            0xAA | 0xB6 => {
+                shift = false;
+            },
+            _ => {
+
+            }
+        }
 
         // Handle the input
         // Key was pressed
@@ -60,7 +74,13 @@ pub fn keyboard_loop() {
             0x0B => '0',
             0x0C => '-',
             0x0D => '=',
-            0x10 => 'q',
+            0x10 => {
+                if shift {
+                    'Q'
+                } else {
+                    'q'
+                }
+            },
             0x11 => 'w',
             0x12 => 'e',
             0x13 => 'r',
@@ -99,17 +119,9 @@ pub fn keyboard_loop() {
             0x39 => ' ',  // Space bar
             0x4A => '-',  // Numeric keypad subtraction symbol
             0x4E => '+',  // Numeric keypad addition symbol
-            0x4F => '1',
-            0x50 => '2',
-            0x51 => '3',
-            0x52 => '0',
             0x53 => '.',  // Numeric keypad decimal point symbol
             0x4B => '4', // Left arrow
             0x4D => '6', // Right arrow
-            0x2A => '\0', // Left Shift key
-            0x36 => '\0', // Right Shift key
-            0x3A => '\0', // Caps Lock key
-            0xAA => 'A',
             0x48 => {
 
                 // Clear current command
