@@ -11,26 +11,82 @@ pub fn process_cmd (
 
     print!("\n");
 
-    //echo
-    if cmd_buffer[0..5] == ['e', 'c', 'h', 'o', ' '] {
+    // Location of space in commands with arguments
+    let mut seperator = 0;
 
-        print!("Scarab: ");
-        // Print argument
-        for letter in 5..cmd_length {
-            print!("{}", cmd_buffer[letter]);
+    for i in 1..cmd_length {
+        if cmd_buffer[i] == ' ' {
+            seperator = i;
         }
-
-    } else if cmd_buffer[0..5] == ['c', 'l', 'e', 'a', 'r'] {
-
-        vga_buffer::TERMINAL.lock().clear();
-
-    } else { // no command
-
-        print!("Scarab: Command not found!\n'");
-        for letter in 0..cmd_length {
-            print!("{}", cmd_buffer[letter]);
-        }
-        print!("'");
     }
+
+    if seperator == 0 {
+        /*
+            Single word commands
+
+            - clear
+        */
+
+        match cmd_buffer[0..cmd_length] {
+
+            ['c', 'l', 'e', 'a', 'r'] => {
+
+                vga_buffer::TERMINAL.lock().clear();
+
+            },
+            ['H', 'e', 'l', 'l', 'o', '!'] => {
+
+                print!("Scarab: Hi there!\n");
+
+            }
+            _ => { // Unkown command
+
+                print!("Command not found! '");
+
+            }
+        };
+
+    } else {
+        /*
+            Argument commands
+
+            - echo
+        */
+        
+        match cmd_buffer[0..seperator] {
+            ['e', 'c', 'h', 'o'] => {
+                
+                print!("Scarab: ");
+                // Print argument
+                for letter in seperator+1..cmd_length {
+                    print!("{}", cmd_buffer[letter]);
+                }
+
+            },
+            ['c', 'o', 'l', 'o', 'r'] => {
+
+                match cmd_buffer[seperator+1..cmd_length] {
+                    ['r', 'e', 'd'] => {
+                        vga_buffer::TERMINAL.lock().set_color(
+                            vga_buffer::Color::Red,
+                            vga_buffer::Color::Black
+                        );
+                    }
+                    _ => {
+
+                        print!("unable to set color\n");
+
+                    }
+                }
+
+            }
+            _ => { // Unkown command
+
+                print!("Command not found!");
+
+            }
+        };
+    }
+
     print!("\n\n> ");
 }
