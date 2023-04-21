@@ -78,7 +78,7 @@ impl Terminal {
 
             }
 
-            self.put_entry_at(' ', make_color(Color::LightGrey, Color::Black), self.column, self.row);
+            self.put_entry_at(' ', make_color(Color::White, Color::Black), self.column, self.row);
             self.write_cursor(true);
 
         }
@@ -87,11 +87,11 @@ impl Terminal {
     pub fn clear(&mut self) {
         self.row = 0;
         self.column = 0;
-        self.set_color(Color::LightGrey, Color::Black);
+        self.set_color(Color::White, Color::Black);
 
         for y in 0..VGA_HEIGHT {
             for x in 0..VGA_WIDTH {
-                self.put_entry_at(' ', make_color(Color::LightGrey, Color::Black), x, y);
+                self.put_entry_at(' ', make_color(Color::White, Color::Black), x, y);
             }
         }
     }
@@ -100,7 +100,7 @@ impl Terminal {
 
         // Can change these depends how I feel
         let c_bg_color = if visible { Color::White } else { Color::Black };
-        let c_fg_color = Color::Black;
+        let c_fg_color = if visible { Color::Black } else { Color::Black };
         let c_char = ' ';
 
         self.put_entry_at(c_char, make_color(c_fg_color, c_bg_color), self.column, self.row);

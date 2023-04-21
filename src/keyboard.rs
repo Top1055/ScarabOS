@@ -40,6 +40,7 @@ fn get_key() -> u8 {
 }
 
 pub fn keyboard_loop() {
+
     /*
     No need to initialize the keyboard controller
     as we did this in boot.asm
@@ -51,7 +52,7 @@ pub fn keyboard_loop() {
     let mut cmd_length = 0;
 
     // Storing previous command
-    let mut cmd_buffer_hist: [char; KEYBOARD_BUFFER_SIZE] = ['\0'; KEYBOARD_BUFFER_SIZE];
+    let cmd_buffer_hist: [char; KEYBOARD_BUFFER_SIZE] = ['\0'; KEYBOARD_BUFFER_SIZE];
     let mut cmd_length_hist = 0;
 
     //tracks if shift is held

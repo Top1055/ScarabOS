@@ -1,6 +1,7 @@
 use crate::{print};
 use crate::vga_buffer;
 use crate::keyboard;
+use core::arch::asm;
 
 pub fn process_cmd (
     cmd_length: usize,
@@ -17,6 +18,7 @@ pub fn process_cmd (
     for i in 1..cmd_length {
         if cmd_buffer[i] == ' ' {
             seperator = i;
+            break;
         }
     }
 
@@ -33,15 +35,10 @@ pub fn process_cmd (
 
                 vga_buffer::TERMINAL.lock().clear();
 
-            },
-            ['H', 'e', 'l', 'l', 'o', '!'] => {
-
-                print!("Scarab: Hi there!\n");
-
             }
             _ => { // Unkown command
 
-                print!("Command not found! '");
+                print!("Command not found!");
 
             }
         };
@@ -62,22 +59,29 @@ pub fn process_cmd (
                     print!("{}", cmd_buffer[letter]);
                 }
 
-            },
+            }
             ['c', 'o', 'l', 'o', 'r'] => {
 
-                match cmd_buffer[seperator+1..cmd_length] {
-                    ['r', 'e', 'd'] => {
-                        vga_buffer::TERMINAL.lock().set_color(
-                            vga_buffer::Color::Red,
-                            vga_buffer::Color::Black
-                        );
-                    }
+                let color = match cmd_buffer[seperator+1..cmd_length] {
+                    ['b', 'l', 'u', 'e'] => vga_buffer::Color::Blue,
+                    ['g', 'r', 'e', 'e', 'n'] => vga_buffer::Color::Green,
+                    ['c', 'y', 'a', 'n'] => vga_buffer::Color::Cyan,
+                    ['r', 'e', 'd'] => vga_buffer::Color::Red,
+                    ['m', 'a', 'g', 'e', 'n', 't', 'a'] => vga_buffer::Color::Magenta,
+                    ['b', 'r', 'o', 'w', 'n'] => vga_buffer::Color::Brown,
+
                     _ => {
 
                         print!("unable to set color\n");
+                        vga_buffer::Color::White
 
                     }
-                }
+                };
+
+                vga_buffer::TERMINAL.lock().set_color(
+                    color,
+                    vga_buffer::Color::Black
+                );
 
             }
             _ => { // Unkown command
