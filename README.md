@@ -31,5 +31,9 @@ $ make run
 ```
 aka run an existing .img file
 ```
+$ qemu-system-x86_64 -drive format=raw,file=[IMAGE_NAME].img
+```
+add curses display if running in terminal
+```
 $ qemu-system-x86_64 -display curses -drive format=raw,file=[IMAGE_NAME].img
 ```
