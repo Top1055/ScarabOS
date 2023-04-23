@@ -1,7 +1,6 @@
 use crate::{print};
 use crate::vga_buffer;
 use crate::keyboard;
-use core::arch::asm;
 
 pub fn process_cmd (
     cmd_length: usize,

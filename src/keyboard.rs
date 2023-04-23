@@ -6,18 +6,12 @@ use crate::{print};
 //command buffer
 pub const KEYBOARD_BUFFER_SIZE: usize = 256;
 
+// Reading ports using asm
 #[inline(always)]
 unsafe fn inb(port: u16) -> u8 {
     let result: u8;
     asm!("in al, dx", out("al") result, in("dx") port, options(nomem, nostack));
     result
-}
-
-fn buffcpy(src: [char; KEYBOARD_BUFFER_SIZE], mut dst: [char; KEYBOARD_BUFFER_SIZE], len: usize) {
-    dst = ['\0'; KEYBOARD_BUFFER_SIZE];
-    for letter in 0..len {
-        dst[letter] = src[letter];
-    }
 }
 
 fn get_key() -> u8 {
@@ -42,18 +36,16 @@ fn get_key() -> u8 {
 pub fn keyboard_loop() {
 
     /*
-    No need to initialize the keyboard controller
-    as we did this in boot.asm
+
+        No need to initialize the keyboard controller
+        as we did this in boot.asm
+
     */
 
     //setup command buffer
     let mut cmd_buffer: [char; KEYBOARD_BUFFER_SIZE] = ['\0'; KEYBOARD_BUFFER_SIZE];
     // Index for tracking buffer
     let mut cmd_length = 0;
-
-    // Storing previous command
-    let cmd_buffer_hist: [char; KEYBOARD_BUFFER_SIZE] = ['\0'; KEYBOARD_BUFFER_SIZE];
-    let mut cmd_length_hist = 0;
 
     //tracks if shift is held
     let mut shift: bool = false;
@@ -62,7 +54,6 @@ pub fn keyboard_loop() {
     loop {
 
         let scancode = get_key();
-        let mut key = '\0';
 
         // check if shift is being held
         match scancode {
@@ -78,11 +69,15 @@ pub fn keyboard_loop() {
         }
 
         // Handle the input
-        if shift {
-            key = translate_upper_alphanum(scancode);
+        let key = if shift {
+
+            translate_upper_alphanum(scancode)
+
         } else {
-            key = translate_alphanum(scancode);
-        }
+
+            translate_alphanum(scancode)
+
+        };
 
         if key != '\0' {
 
@@ -105,21 +100,6 @@ pub fn keyboard_loop() {
                         //TODO
 
                     },
-                0x48 => {   // Up arrow
-
-                    // Clear current command
-                    vga_buffer::TERMINAL.lock().back(cmd_length);
-
-                    // Copy last command to buffer
-                    buffcpy(cmd_buffer_hist, cmd_buffer, cmd_length_hist);
-                    cmd_length = cmd_length_hist;
-
-                    // Display command
-                    for i in 0..cmd_length {
-                        print!("{}", cmd_buffer[i]);
-                    }
-
-                },
                 0x0E => {   // Backspace
 
                     if cmd_length > 0 {
@@ -134,11 +114,6 @@ pub fn keyboard_loop() {
 
                     // Process command
                     cli::process_cmd(cmd_length, cmd_buffer);
-
-                    // Logging previous command
-                    buffcpy(cmd_buffer, cmd_buffer_hist, cmd_length);
-                    cmd_length_hist = cmd_length;
-
                     cmd_length = 0;
 
                 },
