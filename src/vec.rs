@@ -1,6 +1,8 @@
 use crate::scalloc::free;
 use crate::scalloc::alloc;
 
+use core::fmt;
+
 #[derive(Debug)]
 pub struct Vec<T> {
     ptr: *mut T,
@@ -124,6 +126,53 @@ impl<T: PartialEq> PartialEq for Vec<T> {
         }
 
         true
+    }
+}
+
+impl fmt::Display for Vec<char> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for i in 0..self.len() {
+            write!(f, "{}", self.get(i).unwrap())?;
+        }
+        Ok(())
+    }
+}
+
+pub struct Iter<'a, T> {
+    ptr: *const T,
+    len: usize,
+    idx: usize,
+    _marker: core::marker::PhantomData<&'a T>,
+}
+
+impl<'a, T> Iter<'a, T> {
+    fn new(ptr: *const T, len: usize) -> Self {
+        Self {
+            ptr,
+            len,
+            idx: 0,
+            _marker: core::marker::PhantomData,
+        }
+    }
+}
+
+impl<'a, T> Iterator for Iter<'a, T> {
+    type Item = &'a T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.idx < self.len {
+            let item_ptr = unsafe { self.ptr.offset(self.idx as isize) };
+            self.idx += 1;
+            Some(unsafe { &*item_ptr })
+        } else {
+            None
+        }
+    }
+}
+
+impl<T> Vec<T> {
+    pub fn iter(&self) -> Iter<T> {
+        Iter::new(self.ptr, self.len)
     }
 }
 
