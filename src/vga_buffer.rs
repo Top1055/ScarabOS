@@ -128,7 +128,7 @@ impl Terminal {
                 self.column = 0;
                 
                 self.row += 1;
-                if self.row > VGA_HEIGHT {
+                if self.row >= VGA_HEIGHT {
                     self.scroll();
                 }
             }
