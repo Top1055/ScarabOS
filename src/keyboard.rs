@@ -2,9 +2,7 @@ use core::arch::asm;
 use crate::cli;
 use crate::vga_buffer;
 use crate::{print};
-
-//command buffer
-pub const KEYBOARD_BUFFER_SIZE: usize = 256;
+use crate::vec::Vec;
 
 // Reading ports using asm
 #[inline(always)]
@@ -42,10 +40,8 @@ pub fn keyboard_loop() {
 
     */
 
-    //setup command buffer
-    let mut cmd_buffer: [char; KEYBOARD_BUFFER_SIZE] = ['\0'; KEYBOARD_BUFFER_SIZE];
-    // Index for tracking buffer
-    let mut cmd_length = 0;
+    // Track keyboard inputs
+    let mut cmd = Vec::<char>::new();
 
     //tracks if shift is held
     let mut shift: bool = false;
@@ -83,8 +79,7 @@ pub fn keyboard_loop() {
 
             // print char
             print!("{}", key);
-            cmd_buffer[cmd_length] = key;
-            cmd_length += 1;
+            cmd.push(key);
 
         } else {
 
@@ -102,10 +97,10 @@ pub fn keyboard_loop() {
                     },
                 0x0E => {   // Backspace
 
-                    if cmd_length > 0 {
+                    if cmd.len() > 0 {
 
                         vga_buffer::TERMINAL.lock().back(1);
-                        cmd_length -= 1;
+                        cmd.pop();
 
                     }
 
@@ -113,8 +108,9 @@ pub fn keyboard_loop() {
                 0x1C => {   // Enter
 
                     // Process command
-                    cli::process_cmd(cmd_length, cmd_buffer);
-                    cmd_length = 0;
+                    cli::process_cmd(cmd);
+
+                    cmd = Vec::<char>::new(); // Pops all elements and frees memory
 
                 },
                 _ => {      // Ignore other keys

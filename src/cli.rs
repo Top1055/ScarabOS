@@ -1,95 +1,113 @@
-use crate::{print};
-use crate::vga_buffer;
-use crate::keyboard;
+use crate::{print, println};
+use crate::vga_buffer::{TERMINAL, Color};
+use crate::vec::Vec;
+
+fn find_seperator(cmd: &Vec::<char>) -> usize {
+
+    // Finds first space in cmd
+    for i in 0..cmd.len() {
+        if cmd[i] == ' ' {
+            return i;
+        }
+    }
+
+    // if unable to find space
+    return 0;
+}
+
+fn vec_char_starts_with(vec: &Vec<char>, s: &str, n: usize) -> bool {
+    if vec.len() < n {
+        return false;
+    }
+
+    for i in 0..n {
+        if vec[i] != s.as_bytes()[i] as char {
+            return false;
+        }
+    }
+
+    true
+}
+
+fn vec_char_range_match(vec: &Vec<char>, s: &str, a: usize, b: usize) -> bool {
+    if vec.len() < a || vec.len() < b {
+        return false;
+    }
+
+    for i in a..b {
+        if vec[i] != s.as_bytes()[i-a] as char {
+            return false;
+        }
+    }
+
+    true
+}
 
 pub fn process_cmd (
-    cmd_length: usize,
-    cmd_buffer: [char; keyboard::KEYBOARD_BUFFER_SIZE]) {
+    cmd: Vec::<char>) {
 
-    //TODO implement match
-    //TODO implement struct
+    if cmd.len() == 0 {
+        print!("\n> ");
+        return;
+    }
 
     print!("\n");
 
     // Location of space in commands with arguments
-    let mut seperator = 0;
-
-    for i in 1..cmd_length {
-        if cmd_buffer[i] == ' ' {
-            seperator = i;
-            break;
-        }
-    }
+    let seperator = find_seperator(&cmd);
 
     if seperator == 0 {
-        /*
-            Single word commands
 
-            - clear
-        */
-
-        match cmd_buffer[0..cmd_length] {
-
-            ['c', 'l', 'e', 'a', 'r'] => {
-
-                vga_buffer::TERMINAL.lock().clear();
-
-            }
-            _ => { // Unkown command
-
-                print!("Command not found!");
-
-            }
-        };
+        check_single_commands(&cmd);
 
     } else {
-        /*
-            Argument commands
 
-            - echo
-        */
-        
-        match cmd_buffer[0..seperator] {
-            ['e', 'c', 'h', 'o'] => {
-                
-                print!("Scarab: ");
-                // Print argument
-                for letter in seperator+1..cmd_length {
-                    print!("{}", cmd_buffer[letter]);
-                }
+        check_arg_commands(&cmd, seperator);
 
-            }
-            ['c', 'o', 'l', 'o', 'r'] => {
-
-                let color = match cmd_buffer[seperator+1..cmd_length] {
-                    ['b', 'l', 'u', 'e'] => vga_buffer::Color::Blue,
-                    ['g', 'r', 'e', 'e', 'n'] => vga_buffer::Color::Green,
-                    ['c', 'y', 'a', 'n'] => vga_buffer::Color::Cyan,
-                    ['r', 'e', 'd'] => vga_buffer::Color::Red,
-                    ['m', 'a', 'g', 'e', 'n', 't', 'a'] => vga_buffer::Color::Magenta,
-                    ['b', 'r', 'o', 'w', 'n'] => vga_buffer::Color::Brown,
-
-                    _ => {
-
-                        print!("unable to set color\n");
-                        vga_buffer::Color::White
-
-                    }
-                };
-
-                vga_buffer::TERMINAL.lock().set_color(
-                    color,
-                    vga_buffer::Color::Black
-                );
-
-            }
-            _ => { // Unkown command
-
-                print!("Command not found!");
-
-            }
-        };
     }
 
-    print!("\n\n> ");
+    print!("\n> ");
+}
+
+fn check_single_commands(cmd: &Vec<char>) {
+
+    if vec_char_starts_with(cmd, "clear", cmd.len()) {
+        TERMINAL.lock().clear();
+    } else {
+        println!("Command not found!");
+    }
+}
+
+fn check_arg_commands(cmd: &Vec<char>, seperator: usize) {
+
+    if vec_char_starts_with(cmd, "echo ", seperator) {
+
+        print!("Scarab: ");
+        for letter in seperator+1..cmd.len() {
+            print!("{}", cmd[letter]);
+        }
+
+    } else if vec_char_starts_with(cmd, "color", seperator){
+
+        let mut color: Color = Color::White;
+
+        if vec_char_range_match(cmd, "red", seperator+1, cmd.len()) {
+            color = Color::Red;
+        } else if vec_char_range_match(cmd, "cyan", seperator+1, cmd.len()) {
+            color = Color::Cyan;
+        } else {
+            println!("Unable to set color");
+        }
+
+        TERMINAL.lock().set_color(
+            color,
+            Color::Black
+        );
+
+    } else {
+
+        println!("Command not found!");
+
+    }
+
 }
