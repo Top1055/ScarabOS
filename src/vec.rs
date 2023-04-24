@@ -2,6 +2,7 @@ use crate::scalloc::free;
 use crate::scalloc::alloc;
 
 use core::fmt;
+use core::ops::{Index, IndexMut};
 
 #[derive(Debug)]
 pub struct Vec<T> {
@@ -101,6 +102,7 @@ impl<T> Vec<T> {
     }
 }
 
+// Dropping a vector in memory (I hope this frees memory)
 impl<T> Drop for Vec<T> {
     fn drop(&mut self) {
         // Drop all elements of vector
@@ -113,6 +115,7 @@ impl<T> Drop for Vec<T> {
     }
 }
 
+// Code for compareing vectors against eachother
 impl<T: PartialEq> PartialEq for Vec<T> {
     fn eq(&self, other: &Self) -> bool {
         if self.len() != other.len() {
@@ -129,6 +132,8 @@ impl<T: PartialEq> PartialEq for Vec<T> {
     }
 }
 
+// Being able to print Vec<char>
+
 impl fmt::Display for Vec<char> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for i in 0..self.len() {
@@ -138,6 +143,7 @@ impl fmt::Display for Vec<char> {
     }
 }
 
+// Code needed for interations
 pub struct Iter<'a, T> {
     ptr: *const T,
     len: usize,
@@ -176,6 +182,22 @@ impl<T> Vec<T> {
     }
 }
 
+// Indexing implementation
+impl<T> Index<usize> for Vec<T> {
+    type Output = T;
+
+    fn index(&self, index: usize) -> &T {
+        self.get(index).expect("index out of bounds")
+    }
+}
+
+impl<T> IndexMut<usize> for Vec<T> {
+    fn index_mut(&mut self, index: usize) -> &mut T {
+        self.get_mut(index).expect("index out of bounds")
+    }
+}
+
+// Macro for easily creating vectors
 #[macro_export]
 macro_rules! vec {
     ( $( $x:expr ),* ) => {{
