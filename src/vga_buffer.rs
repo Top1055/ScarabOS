@@ -183,13 +183,100 @@ impl Terminal {
     pub fn panic(&mut self) {
         self.row = 0;
         self.column = 0;
-        self.set_color(Color::Black, Color::Red);
+        self.set_color(Color::White, Color::Red);
 
         for y in 0..VGA_HEIGHT {
             for x in 0..VGA_WIDTH {
                 self.put_entry_at(' ', make_color(Color::White, Color::Red), x, y);
             }
         }
+    }
+
+    pub fn color_test(&mut self) {
+        let backup_color = self.color;
+        
+        self.color = make_color(
+            Color::White, Color::Black
+        );
+        self.print(" White + Black ");
+
+        self.color = make_color(
+            Color::White, Color::Blue
+        );
+        self.print(" White + Blue ");
+
+        self.color = make_color(
+            Color::White, Color::Green
+        );
+        self.print(" White + Green ");
+
+        self.color = make_color(
+            Color::Black, Color::Cyan
+        );
+        self.print(" Black + Cyan ");
+
+        self.color = make_color(
+            Color::White, Color::Red
+        );
+        self.print(" White + Red ");
+
+        self.color = make_color(
+            Color::White, Color::Magenta
+        );
+        self.print(" White + Magenta ");
+
+        self.color = make_color(
+            Color::White, Color::Brown
+        );
+        self.print(" White + Brown ");
+
+        self.color = make_color(
+            Color::Black, Color::LightGrey
+        );
+        self.print(" Black + LightGrey ");
+
+        self.color = make_color(
+            Color::White, Color::DarkGrey
+        );
+        self.print(" White + DarkGrey ");
+
+        self.color = make_color(
+            Color::Black, Color::LightBlue
+        );
+        self.print(" Black + LightBlue ");
+
+        self.color = make_color(
+            Color::Black, Color::LightGreen
+        );
+        self.print(" Black + LightGreen ");
+
+        self.color = make_color(
+            Color::Black, Color::LightCyan
+        );
+        self.print(" Black + LightCyan ");
+
+        self.color = make_color(
+            Color::Black, Color::LightRed
+        );
+        self.print(" Black + LightRed ");
+
+        self.color = make_color(
+            Color::Black, Color::LightMagenta
+        );
+        self.print(" Black + LightMagenta ");
+
+        self.color = make_color(
+            Color::Black, Color::LightBrown
+        );
+        self.print(" Black + LightBrown ");
+
+        self.color = make_color(
+            Color::Black, Color::White
+        );
+        self.print(" Black + White ");
+
+        self.color = backup_color;
+
     }
 
 }
