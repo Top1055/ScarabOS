@@ -23,6 +23,6 @@ pub extern fn init() {
         vga_buffer::Color::Black
     );
 
-    print!("\n> ");
+    print!("try 'help'\n\n> ");
     keyboard::keyboard_loop();
 }
