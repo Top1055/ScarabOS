@@ -1,4 +1,4 @@
-use crate::{print, println};
+use crate::{print, println, vec};
 use crate::vga_buffer::{TERMINAL, Color};
 use crate::vec::Vec;
 
@@ -73,6 +73,14 @@ fn check_single_commands(cmd: &Vec<char>) {
 
     if vec_char_starts_with(cmd, "clear", cmd.len()) {
         TERMINAL.lock().clear();
+
+    } else if vec_char_starts_with(cmd, "error", cmd.len()) {
+
+        // This will fail, it is just here
+        // To produce a panic for debugging
+        let mut fail = vec![1];
+        fail[2] = 2;
+
     } else {
         println!("Command not found!");
     }
@@ -87,14 +95,31 @@ fn check_arg_commands(cmd: &Vec<char>, seperator: usize) {
             print!("{}", cmd[letter]);
         }
 
-    } else if vec_char_starts_with(cmd, "color", seperator){
+    } else if vec_char_starts_with(cmd, "color ", seperator){
 
         let mut color: Color = Color::White;
 
         if vec_char_range_match(cmd, "red", seperator+1, cmd.len()) {
             color = Color::Red;
+
         } else if vec_char_range_match(cmd, "cyan", seperator+1, cmd.len()) {
             color = Color::Cyan;
+
+        } else if vec_char_range_match(cmd, "magenta", seperator+1, cmd.len()) {
+            color = Color::Magenta;
+
+        } else if vec_char_range_match(cmd, "green", seperator+1, cmd.len()) {
+            color = Color::Green;
+
+        } else if vec_char_range_match(cmd, "brown", seperator+1, cmd.len()) {
+            color = Color::Brown;
+
+        } else if vec_char_range_match(cmd, "light magenta", seperator+1, cmd.len()) {
+            color = Color::LightMagenta;
+
+        } else if vec_char_range_match(cmd, "white", seperator+1, cmd.len()) {
+            color = Color::White;
+
         } else {
             println!("Unable to set color");
         }
