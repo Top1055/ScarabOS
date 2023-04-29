@@ -81,6 +81,31 @@ fn check_single_commands(cmd: &Vec<char>) {
         let mut fail = vec![1];
         fail[2] = 2;
 
+    } else if vec_char_starts_with(cmd, "color-test", cmd.len()) {
+
+        TERMINAL.lock().color_test();
+
+    } else if vec_char_starts_with(cmd, "help", cmd.len()) {
+
+        println!("======== Help: COMMANDS ========");
+        println!("Single commands:");
+        println!("    = help - shows this message");
+        println!("    = clear - clears the terminal");
+        println!("    = color-test - displays the possible colors");
+        println!("    = error - causes a kernel panic (via accessing a vector out of bounds)");
+
+        println!("Argument commands:");
+        println!("    = echo <text> - repeats entered text back");
+        println!("    = color <color> - changes the current terminal foreground color");
+        println!("        OPTIONS:");
+        println!("        - red");
+        println!("        - cyan");
+        println!("        - magenta");
+        println!("        - green");
+        println!("        - brown");
+        println!("        - light magenta");
+        println!("        - white");
+
     } else {
         println!("Command not found!");
     }
