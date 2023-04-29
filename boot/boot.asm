@@ -45,7 +45,7 @@ set_up_page_tables:
     ; inside the page table
     inc ecx ; i++
     cmp ecx, 512 ; i != 512
-    jne .map_page_table  ; map
+    jne .map_page_table  ; loop!
 
     ret
 
