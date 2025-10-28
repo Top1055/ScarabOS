@@ -1,5 +1,5 @@
-use crate::scalloc::free;
 use crate::scalloc::alloc;
+use crate::scalloc::free;
 
 use core::fmt;
 use core::ops::{Index, IndexMut};
@@ -22,18 +22,14 @@ impl<T> Vec<T> {
 
     pub fn push(&mut self, val: T) {
         if self.len == self.cap {
-            let new_cap = if self.cap == 0 {
-                1
-            } else {
-                self.cap * 2
-            };
+            let new_cap = if self.cap == 0 { 1 } else { self.cap * 2 };
             let new_ptr = alloc(new_cap * core::mem::size_of::<T>()) as *mut T;
             unsafe {
                 // Copy old elements to new memory
                 core::ptr::copy_nonoverlapping(self.ptr, new_ptr, self.len);
 
                 // Free old memory
-                free(self.ptr as *mut u8, self.cap * core::mem::size_of::<T>());
+                free(self.ptr as *mut u8);
 
                 // Update fields
                 self.ptr = new_ptr;
@@ -64,9 +60,7 @@ impl<T> Vec<T> {
 
     pub fn get(&self, idx: usize) -> Option<&T> {
         if idx < self.len {
-            unsafe {
-                Some(&*self.ptr.offset(idx as isize))
-            }
+            unsafe { Some(&*self.ptr.offset(idx as isize)) }
         } else {
             None
         }
@@ -74,9 +68,7 @@ impl<T> Vec<T> {
 
     pub fn get_mut(&mut self, idx: usize) -> Option<&mut T> {
         if idx < self.len {
-            unsafe {
-                Some(&mut *self.ptr.offset(idx as isize))
-            }
+            unsafe { Some(&mut *self.ptr.offset(idx as isize)) }
         } else {
             None
         }
@@ -110,7 +102,7 @@ impl<T> Drop for Vec<T> {
 
         // Free memory
         if !self.ptr.is_null() {
-            free(self.ptr as *mut u8, self.cap * core::mem::size_of::<T>());
+            free(self.ptr as *mut u8);
         }
     }
 }

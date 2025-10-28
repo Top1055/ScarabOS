@@ -1,14 +1,12 @@
-use crate::{print, println};
 use crate::keyboard;
 use crate::vga_buffer;
+use crate::{print, println};
 
-pub extern fn init() {
-
+pub extern "C" fn init() {
     // Draw text in brown
-    vga_buffer::TERMINAL.lock().set_color(
-        vga_buffer::Color::Brown,
-        vga_buffer::Color::Black
-    );
+    vga_buffer::TERMINAL
+        .lock()
+        .set_color(vga_buffer::Color::Brown, vga_buffer::Color::Black);
 
     println!(" _____                     _     _____ _____");
     println!("/  ___|                   | |   |  _  /  ___|");
@@ -18,10 +16,9 @@ pub extern fn init() {
     println!("\\____/ \\___\\__,_|_|  \\__,_|_.__/ \\___/\\____/");
 
     // Reset Color
-    vga_buffer::TERMINAL.lock().set_color(
-        vga_buffer::Color::White,
-        vga_buffer::Color::Black
-    );
+    vga_buffer::TERMINAL
+        .lock()
+        .set_color(vga_buffer::Color::White, vga_buffer::Color::Black);
 
     print!("try 'help'\n\n> ");
     keyboard::keyboard_loop();
