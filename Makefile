@@ -10,7 +10,7 @@
 
 # Rust code
 ./out/libscarab.a: ./src/lib.rs
-	@RUST_TARGET_PATH=$(shell pwd) xargo build --target x86_64-scarab_os --release
+	@RUST_TARGET_PATH=$(shell pwd) cargo build --release
 
 # Assembly booter
 
@@ -33,6 +33,4 @@ clean:
 	rm -rf ./out/*
 	mkdir -p ./out/isodir/boot/grub
 	rm -rf target
-	@RUST_TARGET_PATH=$(shell pwd) xargo clean
-	xargo clean
 	cargo clean
