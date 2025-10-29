@@ -1,3 +1,19 @@
+use core::alloc::{GlobalAlloc, Layout};
+
+pub struct ScarabAllocator;
+
+#[global_allocator]
+static ALLOCATOR: ScarabAllocator = ScarabAllocator;
+unsafe impl GlobalAlloc for ScarabAllocator {
+    unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
+        alloc(layout.size())
+    }
+
+    unsafe fn dealloc(&self, ptr: *mut u8, _layout: Layout) {
+        free(ptr)
+    }
+}
+
 const BLOCK_SIZE: usize = 4096; // 4KB blocks
 const HEAP_SIZE: usize = 1024 * 1024; // 1MB heap
 const HEADER_LEN: usize = 8;

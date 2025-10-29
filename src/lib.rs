@@ -2,11 +2,12 @@
 #![no_main]
 
 pub mod boot;
-pub mod vga_buffer;
-pub mod keyboard;
 pub mod cli;
+pub mod keyboard;
 pub mod scalloc;
 pub mod vec;
+pub mod vga_buffer;
+extern crate alloc;
 
 #[no_mangle] // don't mangle the name of this function
 pub extern "C" fn rust_main() -> ! {
@@ -19,7 +20,8 @@ use core::panic::PanicInfo;
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     vga_buffer::TERMINAL.lock().panic();
-    print!("
+    print!(
+        "
  _   __                     _  ______           _           __
 | | / /                    | | | ___ \\         (_)       _ / /
 | |/ /  ___ _ __ _ __   ___| | | |_/ /_ _ _ __  _  ___  (_) |
@@ -28,7 +30,8 @@ fn panic(info: &PanicInfo) -> ! {
 \\_| \\_/\\___|_|  |_| |_|\\___|_| \\_|  \\__,_|_| |_|_|\\___| (_) |
                                                            \\_\\
 
-");
+"
+    );
     println!("{}", info);
     loop {}
 }
