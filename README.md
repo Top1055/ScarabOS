@@ -1,53 +1,99 @@
-# ScarabOS
-Scarab is a hobby OS, very minimal, created by me in order to learn systems programming concepts and make something interactive.
-Scarab uses the x86_64-EFI architecture, If you're interested in trying this system I would highly recommend using a virtual machine such as qemu, most the project is designed around qemu
+# 🪲 ScarabOS
 
+A minimal hobby operating system written in Rust for x86_64-EFI architecture.
 
-# Building
+ScarabOS is a learning project focused on systems programming concepts. Purely a project for understanding how operating systems work from the ground up.
 
-## Requirements
-To build from source, make sure all requirements are installed
-```sh
-rustup
-grub
-nasm
-qemu-full
-xorriso
-mtools
+## 🚀 Quick Start
+
+### Prerequisites
+
+Ensure you have the following installed:
+
+| Tool | Purpose |
+|------|---------|
+| `rustup` | Rust toolchain manager ([install here](https://rustup.rs/)) |
+| `grub` | Bootloader |
+| `nasm` | x86 assembler |
+| `qemu-full` | Virtualization (recommended for testing) |
+| `xorriso` | ISO image creation |
+| `mtools` | FAT filesystem utilities |
+
+**On Arch Linux:**
+```bash
+sudo pacman -S grub nasm qemu-full xorriso mtools
 ```
-Most of these can be installed with any package manager, however for rust I recommend downloading that from [here](https://rustup.rs/)
-## Setup rust
-- Once installed we need to setup rust with a couple commands.
-Firstly, we need to install the nightly version of rust from January 2024. Specifically this version so we can stablise the install here and not have the code break in newer nightly releases. This is enforced inside our .cargo folder
-```sh
-$ rustup install nightly
+
+**On Ubuntu/Debian:**
+```bash
+sudo apt install grub-pc-bin nasm qemu-system-x86 xorriso mtools
 ```
-Then install Rust components
-```sh
+
+---
+
+## 🔧 Building from Source
+
+### 1. Set up Rust
+
+Install the nightly toolchain (pinned to January 2024 for stability):
+
+```bash
+rustup install nightly
 rustup component add rust-src
 ```
 
-## Build virtual disk image
-For the file system part of the OS, I'm currently using and testing with a virtual raw drive from qemu, generate it with this below:
-```sh
+### 2. Create virtual disk
+
+Generate a raw disk image for the filesystem:
+
+```bash
 qemu-img create -f raw disk.img 10M
 ```
-it creates a 10Mb file for working with files, you can play with this number if you feel you must
 
-## Compiling
-The make file handles all the compilations right now, `clean` may be used to recompile all files at any time.
-- **clean must be ran once before compiling, or it will fail**
-```sh
+> **Note:** Adjust size as needed (e.g. `50M` for 50 megabytes)
+
+### 3. Compile
+
+**First time setup:**
+```bash
 make clean
 ```
-This builds our .img file that we use to boot with qemu
-```sh
+> ⚠️ Run `make clean` once before your first build
+
+**Build the OS:**
+```bash
 make
 ```
 
-# Running
-simply
-```
+This creates `scarab.img`, your bootable OS image!
+
+---
+
+## 🎮 Running ScarabOS
+
+Launch in QEMU with:
+
+```bash
 make run
 ```
-Enjoy ~Top1055
+
+You'll boot into a minimal terminal where you can explore the basic command system.
+> Use alt + 2 to open up the Qemu terminal and then type q or quit to exit the VM
+
+---
+
+## 📚 Learning Resources
+
+This project was heavily inspired by:
+- [Writing an OS in Rust](https://os.phil-opp.com/) by Philipp Oppermann
+- My Operating Systems professor in university
+- The Pintos educational OS
+
+---
+
+## 🤝 Contributing
+
+This is a personal learning project, but feel free to:
+- **Fork** and experiment
+- **Open issues** for interesting ideas
+- **Share** your own OS development journey!
