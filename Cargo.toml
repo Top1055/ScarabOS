@@ -11,6 +11,8 @@ crate-type = ["staticlib"]
 [dependencies]
 volatile = "0.2.6"
 spin = "0.5.2"
+x86_64 = "=0.14.11"
+pic8259 = "0.10"
 
 [dependencies.lazy_static]
 version = "1.0"
