@@ -192,7 +192,7 @@ impl<T> IndexMut<usize> for Vec<T> {
 // Macro for easily creating vectors
 #[macro_export]
 macro_rules! vec {
-    ( $( $x:expr ),* ) => {{
+    ( $( $x:expr ),*$(,)? ) => {{
         let mut v = Vec::new();
         $(
             v.push($x);
