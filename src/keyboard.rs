@@ -1,16 +1,8 @@
 use crate::cli;
+use crate::port::inb;
 use crate::print;
 use crate::vec::Vec;
 use crate::vga_buffer;
-use core::arch::asm;
-
-// Reading ports using asm
-#[inline(always)]
-unsafe fn inb(port: u16) -> u8 {
-    let result: u8;
-    asm!("in al, dx", out("al") result, in("dx") port, options(nomem, nostack));
-    result
-}
 
 fn get_key() -> u8 {
     unsafe {
