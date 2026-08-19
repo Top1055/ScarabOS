@@ -7,6 +7,7 @@ pub mod keyboard;
 pub mod scalloc;
 pub mod vec;
 pub mod vga_buffer;
+pub mod graphics;
 extern crate alloc;
 
 #[no_mangle] // don't mangle the name of this function
@@ -19,6 +20,13 @@ use core::panic::PanicInfo;
 
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
+    // SAFETY:
+    // as a single thread program this is safe after a panic since nothing else runs
+    // the program is effectively dead and over
+    // Alsso conditional interrupts are disabled
+    unsafe {
+        vga_buffer::TERMINAL.force_unlock();
+    }
     vga_buffer::TERMINAL.lock().panic();
     print!(
         "
@@ -34,4 +42,5 @@ fn panic(info: &PanicInfo) -> ! {
     );
     println!("{}", info);
     loop {}
+
 }
