@@ -1,4 +1,5 @@
-use crate::vga_buffer::{Color, TERMINAL};
+use crate::graphics::cube;
+use crate::vga_buffer::{char_to_byte, make_color, Color, TERMINAL};
 use crate::{print, println, vec};
 use alloc::vec::Vec;
 
@@ -91,6 +92,11 @@ fn check_single_commands(cmd: &vec::Vec<char>) {
         println!("        - brown");
         println!("        - light magenta");
         println!("        - white");
+    } else if vec_char_starts_with(cmd, "test", cmd.len()) {
+        println!("~: {:x}", char_to_byte('~'));
+        println!("color: {:b}", make_color(Color::Green, Color::Black));
+    } else if vec_char_starts_with(cmd, "cube", cmd.len()) {
+        cube();
     } else {
         println!("Command not found!");
     }
