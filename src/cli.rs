@@ -79,6 +79,7 @@ fn check_single_commands(cmd: &vec::Vec<char>) {
         println!("    = help - shows this message");
         println!("    = clear - clears the terminal");
         println!("    = color-test - displays the possible colors");
+        println!("    = cube - displays a 3D rotating cube in terminal");
         println!("    = error - causes a kernel panic (via accessing a vector out of bounds)");
 
         println!("Argument commands:");
