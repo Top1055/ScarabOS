@@ -5,6 +5,7 @@ A minimal hobby operating system written in Rust for x86_64-EFI architecture.
 <p align="center">
   <img src=".github/assets/cube.gif" alt="ScarabOS rendering a rotating wireframe cube" width="600">
 </p>
+
 > 80×50 half-block framebuffer over VGA text mode, perspective projection, no floating-point trig.
 
 ScarabOS is a learning project focused on systems programming concepts. Purely a project for understanding how operating systems work from the ground up.
