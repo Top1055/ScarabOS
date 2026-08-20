@@ -27,7 +27,7 @@
 	mkdir out
 
 run:
-	qemu-system-x86_64 -display curses -drive format=raw,file=out/scarab.img -drive file=disk.img,format=raw,media=disk
+	qemu-system-x86_64 -display curses -drive format=raw,file=out/scarab.img -drive file=disk.img,format=raw,media=disk -vga none -device VGA,refresh_rate=240
 
 clean:
 	rm -rf ./out/*

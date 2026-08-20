@@ -3,11 +3,12 @@
 
 pub mod boot;
 pub mod cli;
+pub mod graphics;
 pub mod keyboard;
+pub mod port;
 pub mod scalloc;
 pub mod vec;
 pub mod vga_buffer;
-pub mod graphics;
 extern crate alloc;
 
 #[no_mangle] // don't mangle the name of this function
@@ -42,5 +43,4 @@ fn panic(info: &PanicInfo) -> ! {
     );
     println!("{}", info);
     loop {}
-
 }
