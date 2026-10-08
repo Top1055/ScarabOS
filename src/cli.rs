@@ -16,11 +16,14 @@ fn find_seperator(cmd: &vec::Vec<char>) -> usize {
 }
 
 fn vec_char_starts_with(vec: &vec::Vec<char>, s: &str, n: usize) -> bool {
-    if vec.len() < n {
+    if n < s.len() {
         return false;
     }
 
     for i in 0..n {
+        if i >= s.len() || i >= vec.len() {
+            return false;
+        }
         if vec[i] != s.as_bytes()[i] as char {
             return false;
         }
@@ -30,11 +33,14 @@ fn vec_char_starts_with(vec: &vec::Vec<char>, s: &str, n: usize) -> bool {
 }
 
 fn vec_char_range_match(vec: &vec::Vec<char>, s: &str, a: usize, b: usize) -> bool {
-    if vec.len() < a || vec.len() < b {
+    if vec.len() - a != s.len() {
         return false;
     }
 
     for i in a..b {
+        if i - a >= s.len() || i - a >= vec.len() {
+            return false;
+        }
         if vec[i] != s.as_bytes()[i - a] as char {
             return false;
         }
@@ -57,7 +63,7 @@ pub fn process_cmd(cmd: vec::Vec<char>) {
     if seperator == 0 {
         check_single_commands(&cmd);
     } else {
-        check_arg_commands(&cmd, seperator);
+        check_arg_commands(&cmd, seperator + 1);
     }
 
     print!("\n> ");
@@ -106,25 +112,25 @@ fn check_single_commands(cmd: &vec::Vec<char>) {
 fn check_arg_commands(cmd: &vec::Vec<char>, seperator: usize) {
     if vec_char_starts_with(cmd, "echo ", seperator) {
         print!("Scarab: ");
-        for letter in seperator + 1..cmd.len() {
+        for letter in seperator..cmd.len() {
             print!("{}", cmd[letter]);
         }
     } else if vec_char_starts_with(cmd, "color ", seperator) {
         let mut color: Color = Color::White;
 
-        if vec_char_range_match(cmd, "red", seperator + 1, cmd.len()) {
+        if vec_char_range_match(cmd, "red", seperator, cmd.len()) {
             color = Color::Red;
-        } else if vec_char_range_match(cmd, "cyan", seperator + 1, cmd.len()) {
+        } else if vec_char_range_match(cmd, "cyan", seperator, cmd.len()) {
             color = Color::Cyan;
-        } else if vec_char_range_match(cmd, "magenta", seperator + 1, cmd.len()) {
+        } else if vec_char_range_match(cmd, "magenta", seperator, cmd.len()) {
             color = Color::Magenta;
-        } else if vec_char_range_match(cmd, "green", seperator + 1, cmd.len()) {
+        } else if vec_char_range_match(cmd, "green", seperator, cmd.len()) {
             color = Color::Green;
-        } else if vec_char_range_match(cmd, "brown", seperator + 1, cmd.len()) {
+        } else if vec_char_range_match(cmd, "brown", seperator, cmd.len()) {
             color = Color::Brown;
-        } else if vec_char_range_match(cmd, "light magenta", seperator + 1, cmd.len()) {
+        } else if vec_char_range_match(cmd, "light magenta", seperator, cmd.len()) {
             color = Color::LightMagenta;
-        } else if vec_char_range_match(cmd, "white", seperator + 1, cmd.len()) {
+        } else if vec_char_range_match(cmd, "white", seperator, cmd.len()) {
             color = Color::White;
         } else {
             println!("Unable to set color");
