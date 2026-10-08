@@ -1,8 +1,8 @@
 use crate::cli;
 use crate::port::inb;
 use crate::print;
-use crate::vec::Vec;
 use crate::vga_buffer;
+use alloc::vec::Vec;
 
 fn get_key() -> u8 {
     unsafe {
