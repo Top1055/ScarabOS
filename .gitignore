@@ -18,3 +18,12 @@ out/
 
 # Exclude disk file, too large and easily generated
 *.img
+
+# Log files
+*.log
+
+# Local working todo file
+TODO.md
+
+# local test files too, they change too much to be committed right now
+tests/*

@@ -29,6 +29,13 @@
 run:
 	qemu-system-x86_64 -display curses -drive format=raw,file=out/scarab.img -drive file=disk.img,format=raw,media=disk -vga none -device VGA,refresh_rate=240
 
+test: ./out/scarab.img
+	python3 tests/run_tests.py
+
+debug: ./out/scarab.img
+	qemu-system-x86_64 -display curses -drive format=raw,file=out/scarab.img \
+		-no-reboot -no-shutdown -d int,cpu_reset -D qemu.log
+
 clean:
 	rm -rf ./out/*
 	mkdir -p ./out/isodir/boot/grub

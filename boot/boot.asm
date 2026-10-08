@@ -22,14 +22,14 @@ start:
 
 set_up_page_tables:
     ; map first page-map table to page pointer table
-    mov eax, page_pointer_table
+    mov eax, p3_table
     or eax, 0b11
-    mov [page_map_table], eax
+    mov [p4_table], eax
 
     ; map first page pointer table entry to page table table
-    mov eax, page_table
+    mov eax, p2_table
     or eax, 0b11
-    mov [page_pointer_table], eax
+    mov [p3_table], eax
 
     ; map each page table entry to a 2M page
     mov ecx, 0
@@ -39,7 +39,7 @@ set_up_page_tables:
     mov eax, 0x200000  ; 2MiB
     mul ecx            ; start address of ecx-th page
     or eax, 0b10000011 ; present + writable + huge
-    mov [page_table + ecx * 8], eax ; map entry
+    mov [p2_table + ecx * 8], eax ; map entry
 
     ; This is a for loop to map all 512 entries
     ; inside the page table
@@ -51,7 +51,7 @@ set_up_page_tables:
 
 enable_paging:
     ; load page map table to cr3 reg
-    mov eax, page_map_table
+    mov eax, p4_table
     mov cr3, eax
 
     ; enable physical address extension flag to cr4 reg
@@ -75,14 +75,14 @@ enable_paging:
 ; Align each table
 section .bss
 align 4096
-page_map_table:
+p4_table:
     resb 4096
-page_pointer_table:
+p3_table:
     resb 4096
-page_table:
+p2_table:
     resb 4096
 stack_bottom:
-    resb 64
+    resb 4096
 stack_top:
 
 ; Global Descriptor Table Setup
