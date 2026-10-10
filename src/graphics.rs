@@ -1,5 +1,5 @@
-use crate::vec;
 use crate::vga_buffer::{make_color, Color, TERMINAL, VGA_HEIGHT, VGA_WIDTH};
+use alloc::vec;
 use alloc::vec::Vec;
 use core::hint::spin_loop;
 

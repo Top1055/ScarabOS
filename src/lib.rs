@@ -7,7 +7,7 @@ pub mod graphics;
 pub mod keyboard;
 pub mod port;
 pub mod scalloc;
-pub mod vec;
+// pub mod vec;
 pub mod vga_buffer;
 extern crate alloc;
 
