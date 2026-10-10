@@ -2,27 +2,29 @@ use core::alloc::{GlobalAlloc, Layout};
 
 pub struct ScarabAllocator;
 
-//#[global_allocator]
 #[cfg_attr(not(test), global_allocator)]
 static ALLOCATOR: ScarabAllocator = ScarabAllocator;
 unsafe impl GlobalAlloc for ScarabAllocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
+        if layout.align() > BLOCK_SIZE {
+            return core::ptr::null_mut();
+        }
         alloc(layout)
     }
 
-    unsafe fn dealloc(&self, ptr: *mut u8, _layout: Layout) {
-        free(ptr)
+    unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
+        free(ptr, layout)
     }
 }
 
 const BLOCK_SIZE: usize = 4096; // 4KB blocks
 const HEAP_SIZE: usize = 1024 * 1024; // 1MB heap
-const HEADER_LEN: usize = 8;
+const BITMAP_SIZE: usize = HEAP_SIZE / BLOCK_SIZE / 8;
 
-#[repr(align(4096))]
+#[repr(C, align(4096))]
 struct Heap {
-    pub data: [u8; HEAP_SIZE],                    // the actual data itself
-    pub bitmap: [u8; HEAP_SIZE / BLOCK_SIZE / 8], // each bit of each u8 is an entry
+    pub data: [u8; HEAP_SIZE],     // the actual data itself
+    pub bitmap: [u8; BITMAP_SIZE], // each bit of each u8 is an entry
 }
 
 impl Heap {
@@ -31,17 +33,59 @@ impl Heap {
         let bit = adr % 8;
         self.bitmap[byte] & (1 << bit) == 0
     }
+
+    pub fn mark_used(&mut self, start: usize, num_blocks: usize) {
+        let byte = start / 8;
+        let bit = start % 8;
+
+        for i in 0..num_blocks {
+            let block = &mut self.bitmap[byte + (bit + i) / 8];
+            // grab the bit we're looking at this loop
+            let block_bit = (bit + i) % 8;
+            let mask = 1 << block_bit; // the one is the flipped bit, and we slide it to the
+                                       // left by `block_bit`
+
+            assert!(*block & mask == 0, "Allocator handing out used memory");
+
+            *block |= mask;
+            // or the mask onto the block
+            // equivilent: block = block | mask
+        }
+    }
+
+    pub fn mark_free(&mut self, start: usize, num_blocks: usize) {
+        let byte = start / 8;
+        let bit = start % 8;
+
+        for i in 0..num_blocks {
+            let block = &mut self.bitmap[byte + (bit + i) / 8];
+            let block_bit = (bit + i) % 8;
+            let mask = 1 << block_bit;
+            assert!(*block & mask != 0, "Double free");
+            *block &= !mask;
+        }
+    }
+
+    pub unsafe fn create_pointer(&mut self, start: usize) -> *mut u8 {
+        let address = start * BLOCK_SIZE;
+        &mut self.data[address] as *mut u8
+    }
 }
 
 static mut HEAP: Heap = Heap {
     data: [0; HEAP_SIZE],
-    bitmap: [0; HEAP_SIZE / BLOCK_SIZE / 8],
+    bitmap: [0; BITMAP_SIZE],
 };
+
+#[inline]
+pub fn layout_to_blocks(layout: Layout) -> usize {
+    (layout.size() + BLOCK_SIZE - 1) / BLOCK_SIZE
+}
 
 pub fn alloc(layout: Layout) -> *mut u8 {
     // Round up size to nearest block size
 
-    let num_blocks = (layout.size() + HEADER_LEN + BLOCK_SIZE - 1) / BLOCK_SIZE;
+    let num_blocks = layout_to_blocks(layout);
 
     unsafe {
         // Set these at the beginning position of the block we're allocating to
@@ -49,35 +93,16 @@ pub fn alloc(layout: Layout) -> *mut u8 {
         let mut free_counter = 0;
         let mut found = false;
 
-        // Find first free set of blocks in bitmap
-        for (i, byte) in HEAP.bitmap.iter().enumerate() {
-            if *byte != 0xff {
-                // Check if byte is full
-                for j in 0..8 {
-                    /* Loop through bits to find free
-                    // Increment counter until all blocks accounted for
-                    // Reset upon taken space
-                     */
-                    if (*byte & (1 << j)) == 0 {
-                        free_counter += 1;
-                        if free_counter == num_blocks {
-                            // Storing the last available block
-                            found = true;
-                            break;
-                        }
-                    } else {
-                        // when finding a used bit, trip the reset
-                        free_counter = 0;
-                        address_start = (i * 8) + j + 1;
-                    }
+        for block in 0..BITMAP_SIZE * 8 {
+            if HEAP.is_free(block) {
+                free_counter += 1;
+                if free_counter == num_blocks {
+                    found = true;
+                    break;
                 }
             } else {
-                // Gloss over a full byte
                 free_counter = 0;
-                address_start = (i + 1) * 8;
-            }
-            if found {
-                break;
+                address_start = block + 1
             }
         }
 
@@ -86,40 +111,30 @@ pub fn alloc(layout: Layout) -> *mut u8 {
         }
 
         // Mark blocks as allocated in bitmap
-        let byte = address_start / 8;
-        let bit = address_start % 8;
-        for i in 0..num_blocks {
-            let byte = &mut HEAP.bitmap[byte + (bit + i) / 8];
-            *byte |= 1 << ((bit + i) % 8);
-        }
+        HEAP.mark_used(address_start, num_blocks);
 
         // Return pointer to allocated memory
-        let header = byte * 8 * BLOCK_SIZE + bit * BLOCK_SIZE;
-        // Track size of alloc
-        let header_ptr = HEAP.data.as_mut_ptr().add(header) as *mut usize;
-        header_ptr.write(num_blocks);
-        &mut HEAP.data[header + HEADER_LEN] as *mut u8
+        HEAP.create_pointer(address_start)
     }
 }
 
-pub fn free(ptr: *mut u8) {
+pub fn free(ptr: *mut u8, layout: Layout) {
     if ptr.is_null() {
         return;
     }
+
+    let num_blocks = layout_to_blocks(layout);
+    // turn the pointer addrress into a number
     unsafe {
-        // Read from the header
-        let header = ptr.sub(HEADER_LEN) as *mut usize;
-        let num_blocks = header.read();
-        // Find starting block in heap
-        let start_block = ((header as usize) - (HEAP.data.as_ptr() as usize)) / BLOCK_SIZE;
+        // subtract the start address of the heap to find ptr's address inside it
+        // then divide to turn into bitmap
+        let adr = ptr as usize - HEAP.data.as_ptr() as usize;
+        let start_block = adr / BLOCK_SIZE;
+
+        // Freeing a pointer alloc never returned e.g. p + 16 or a stack address
+        assert!(adr % BLOCK_SIZE == 0, "Invalid free");
 
         // Mark blocks as free in bitmap
-        for i in 0..num_blocks {
-            let block_number = start_block + i;
-            let byte_idx = block_number / 8;
-            let bit_idx = block_number % 8;
-            let byte = &mut HEAP.bitmap[byte_idx];
-            *byte &= !(1 << (bit_idx));
-        }
+        HEAP.mark_free(start_block, num_blocks);
     }
 }
