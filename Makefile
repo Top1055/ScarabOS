@@ -36,6 +36,9 @@ debug: ./out/scarab.img
 	qemu-system-x86_64 -display curses -drive format=raw,file=out/scarab.img \
 		-no-reboot -no-shutdown -d int,cpu_reset -D qemu.log
 
+test-alloc:
+	cd / && RUSTUP_TOOLCHAIN=$(shell cat rust-toolchain) cargo test --manifest-path $(CURDIR)/tests/alloc/Cargo.toml $(ARGS)
+
 clean:
 	rm -rf ./out/*
 	mkdir -p ./out/isodir/boot/grub
